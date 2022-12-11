@@ -407,3 +407,223 @@ c3=北
 3) bool 类型适于逻辑运算，一般用于程序流程控制[注：这个后面会详细介绍]：
    if 条件控制语句；
    for 循环控制语句
+
+# 四、String类型
+
+## 1.基本介绍
+
+字符串就是一串固定长度的字符连接起来的字符序列。Go 的字符串是由单个字节连接起来的。Go语言的字符串的字节使用 UTF-8 编码标识 Unicode 文本。
+
+## 2.string使用的注意事项和细节
+
+1) Go 语言的字符串的字节使用 UTF-8 编码标识 Unicode 文本，这样 Golang 统一使用 UTF-8 编码,中文乱码问题不会再困扰我们啦。
+2) 字符串一旦赋值了，字符串就不能修改了：在 Go 中字符串是不可变的。
+3) 字符串的两种表示形式
+   (1) 双引号, 会识别转义字符
+   (2) 反引号，以字符串的原生形式输出，包括换行和特殊字符，可以实现防止攻击、输出源代码等效果。
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	//字符串一旦赋值就不能修改
+	var address string = "北京 hello"
+	fmt.Println(address)
+
+	str2 := "abc\nabc"
+	fmt.Println(str2)
+
+	//使用反引号``
+	str3 := `春色凤城来，寒梅逼岁开。条风初入树，缥雪渐侵苔。
+粉逐莺衣散，香黏蝶翅回。陇头人未返，急管莫频催。`
+	fmt.Println(str3)
+
+	//字符串连接方式
+	str4 := "hello" + "xupt"
+	fmt.Println(str4)
+}
+
+//输出：
+//北京 hello
+//abc
+//abc
+//春色凤城来，寒梅逼岁开。条风初入树，缥雪渐侵苔。
+//粉逐莺衣散，香黏蝶翅回。陇头人未返，急管莫频催。
+//helloxupt
+
+```
+
+## 3.基本数据类型的默认值
+
+### 1.基本介绍
+
+在 go 中，数据类型都有一个默认值，当程序员没有赋值时，就会保留默认值，在 go 中，默认值又叫零值。
+
+### 2.基本数据类型的默认值
+
+![](/home/shizhanli/图片/2022-12-11 18-31-27 的屏幕截图.png)
+
+## 4.基本数据类型的相互转换
+
+### 1、基本介绍
+
+Golang 和 java / c 不同，Go 在不同类型的变量之间赋值时需要显式转换。也就是说 Golang 中数据类型不能自动转换。
+
+### 2 、基本语法
+
+**表达式 T(v) 将值 v 转换为类型 T**
+T: 就是数据类型，比如 int32，int64，float32 等等
+v: 就是需要转换的变量
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var i int32 = 100
+	//希望将i => float
+	var n1 float32 = float32(i)
+
+	fmt.Printf("i=%v\n n1=%v", i, n1)
+}
+
+//输出：
+//i=100
+//n1=100
+
+```
+
+### 3、基本数据类型相互转换的注意事项
+
+1) Go 中，数据类型的转换可以是从 表示范围小-->表示范围大，也可以 范围大--->范围小。
+2) 被转换的是变量存储的数据(即值)，变量本身的数据类型并没有变化！
+3) 在转换中，比如将 int64转成 int8 【-128---127】 ，编译时不会报错，只是转换的结果是按溢出处理，和我们希望的结果不一样。
+
+## 5.基本数据类型和 string 的转换
+
+### 1.基本介绍
+
+在程序开发中，我们经常将基本数据类型转成 string,或者将 string 转成基本数据类型。
+
+### 2.基本类型转 string 类型
+
+方式 1：fmt.Sprintf("%参数", 表达式)
+
+参数需要和表达式的数据类型相匹配
+fmt.Sprintf().. 会返回转换后的字符串
+
+方式 2：使用 strconv 包的函数
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+// 基本数据类型转成string
+func main() {
+	var num1 int = 99
+	var num2 float64 = 23.4556
+	var b bool = true
+	var mychar byte = 'h'
+	var str string
+
+	//使用fmt.Sprintf方法
+
+	str = fmt.Sprintf("%d", num1)
+	fmt.Printf("str type %T str=%v\n", str, str)
+
+	str = fmt.Sprintf("%f", num2)
+	fmt.Printf("str type %T str=%q\n", str, str)
+
+	str = fmt.Sprintf("%t", b)
+	fmt.Printf("str type %T str=%q\n", str, str)
+
+	str = fmt.Sprintf("%c", mychar)
+	fmt.Printf("str type %T str=%q\n", str, str)
+
+	//第二种方式 strconv函数
+	var num3 int = 99
+	var num4 float64 = 23.456
+	var b2 bool = true
+
+	str = strconv.FormatInt(int64(num3), 10) //base表示几进制
+	fmt.Printf("str type %T str=%q\n", str, str)
+
+	//bitSize表示f的来源类型（32：float32、64：float64），会据此进行舍入。
+	//fmt表示格式：'f'（-ddd.dddd）、'b'（-ddddp±ddd，指数为二进制）、'e'（-d.dddde±dd，十进制指数）、'E'（-d.ddddE±dd，十进制指数）、'g'（指数很大时用'e'格式，否则'f'格式）、'G'（指数很大时用'E'格式，否则'f'格式）。
+	str = strconv.FormatFloat(num4, 'f', 10, 64) //prec控制精度（10表示10位）
+	fmt.Printf("str type %T str=%q\n", str, str)
+
+	str = strconv.FormatBool(b2)
+	fmt.Printf("str type %T str=%q\n", str, str)
+
+	//strconv中的一个函数Itoa
+	var num5 int = 2341
+	str = strconv.Itoa(num5)
+	fmt.Printf("str type %T str=%q\n", str, str)
+}
+
+//输出：
+//str type string str=99
+//str type string str="23.455600"
+//str type string str="true"
+//str type string str="h"
+//str type string str="99"
+//str type string str="23.4560000000"
+//str type string str="true"
+//str type string str="2341"
+
+```
+
+
+
+### 3.string 类型转基本数据类型
+
+使用 strconv 包的函数
+
+> **string 转基本数据类型的注意事项**
+> 在将 String 类型转成 基本数据类型时，要确保 String 类型能够转成有效的数据，比如 我们可以把 "123" , 转成一个整数，但是不能把 "hello" 转成一个整数，如果这样做，Golang 直接将其转成 0 ，其它类型也是一样的道理. float => 0 bool => false。
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+	var str string = "true"
+	var b bool
+
+	//b,_=strconv.ParseBool(str)
+	//1.strconv.ParseBool(str)函数会返回两个值（value bool,err error）
+	//2.目前只需要获取value bool，不需要获取err，所以采用_忽略
+
+	b, _ = strconv.ParseBool(str)
+	fmt.Printf("b type %T ,b=%v\n", b, b)
+
+	var str2 string = "123456978"
+	var n1 int64
+	var n2 int
+	n1, _ = strconv.ParseInt(str2, 10, 64)
+	n2 = int(n1)
+	fmt.Printf("n1 type %T ,n1=%v\n", n1, n1)
+	fmt.Printf("n2 type %T ,n2=%v\n", n2, n2)
+}
+
+//输出：
+//b type bool ,b=true
+//n1 type int64 ,n1=123456978
+//n2 type int ,n2=123456978
+
+```
+
+# 五、指针
+
