@@ -1,3 +1,5 @@
+[TOC]
+
 
 
 # 一、从“hello world!”开始
@@ -678,7 +680,7 @@ func main() {
 
 ## 5.指针的使用细节
 
-1. 值类型，都有对应的指针类型， 形式为*数据类型，
+1. 值类型，都有对应的指针类型， 形式为***数据类型**，
 
   比如 int 的对应的指针就是 *int,
 
@@ -722,3 +724,202 @@ func main() {
 9.系统的预定义标识符
 
 ![](/home/shizhanli/图片/2022-12-11 19-03-36 的屏幕截图.png)
+
+# 六、运算符
+
+因为我之前学过java语言，go的运算符大多数和java相同，这里不同的是：**go语言明确不支持三元运算符**
+
+**运算符的优先级**
+
+![](/home/shizhanli/图片/2022-12-13 13-29-59 的屏幕截图.png)
+
+# 七、程序流程控制
+
+## 1.switch 分支控制
+
+### 1、基本的介绍
+
+1. switch 语句用于基于不同条件执行不同动作，每一个 case 分支都是唯一的，从上到下逐一测
+  试，直到匹配为止。
+
+2. ==**匹配项后面也不需要再加 break**==
+
+3. ```go
+   	var n1 int32 = 20
+   	var n2 int32 = 20
+   	switch n1 {
+   	case n2, 10, 5: //case后面可以跟多个表达式，满足其一就可以了
+   		fmt.Println("ok1")
+   	default:
+   		fmt.Println("没有匹配到")
+   	}
+   
+   ```
+
+4.
+
+```go
+//switch后也可以不带表达式，类似if--else分支来使用
+	var age int = 10
+	switch {
+	case age == 10:
+		fmt.Println("10")
+	case age == 20:
+		fmt.Println("20")
+	default:
+		fmt.Println("没有匹配到")
+	}
+```
+
+
+
+### 2.switch穿透-fallthrough
+
+如果在 case 语句块后增加 fallthrough ,则会继续执行下一个 case，也叫 switch 穿透。
+
+```go
+//switch 的穿透fallthrough
+
+	var num int = 10
+	switch num {
+	case 10:
+		fmt.Println("ok1")
+		fallthrough //只能穿透一层，如果num=10，会输出ok1，因为穿透的原因会接着执行case2 输出ok2 !!只能穿透一层
+	case 20:
+		fmt.Println("ok2")
+	case 30:
+		fmt.Println("ok3")
+	default:
+		fmt.Println("没有匹配到")
+	}
+```
+
+
+
+### 3.Type Switch
+
+switch 语句还可以被用于 type-switch 来判断某个 interface 变量中实际指向的变量类型。
+
+```go
+
+	//switch 语句还可以被用于 type-switch 来判断某个 interface 变量中实际指向的变量类型。
+
+	var x interface{} //空接口、
+	var y = 10.0
+	x = y
+	switch i := x.(type) { //x.(type)会显示x的真正数据类型
+	case nil:
+		fmt.Printf(" x的类型是 ：%T ", i)
+	case int:
+		fmt.Printf("x是int型")
+	case float64:
+		fmt.Printf("x 是float64 型")
+	case func(int) float64:
+		fmt.Printf("x 是 func(int) 型")
+	case bool, string:
+		fmt.Printf("x 是 bool 或者 string型")
+	default:
+		fmt.Println("未知型")
+
+	}
+```
+
+
+
+## 2.for循环的遍历方式
+
+- 字符串遍历方式 1-传统方式
+
+  ```go
+  //传统方式
+  	var str string = "hello,world!"
+  
+  	for i := 0; i < len(str); i++ {
+  		fmt.Printf("%c \n", str[i])
+  	}
+  	//输出
+  	//h
+  	//e
+  	//l
+  	//l
+  	//o
+  	//,
+  	//w
+  	//o
+  	//r
+  	//l
+  	//d
+  	//!
+  ```
+
+  
+
+- 字符串遍历方式 2-for - range
+
+  ```go
+  	str = "abc-ok"
+  	for index, val := range str {
+  		fmt.Printf("index=%d, val=%c \n", index, val)
+  	}
+  
+  	//输出
+  	//index=0, val=a
+  	//index=1, val=b
+  	//index=2, val=c
+  	//index=3, val=-
+  	//index=4, val=o
+  	//index=5, val=k
+  ```
+
+  
+
+> 小问题讨论
+>
+> **如果我们的字符串含有中文，那么传统的遍历字符串方式，就是错误，会出现乱码**。原因是传统的对字符串的遍历是按照字节来遍历，而一个汉字在 utf8 编码是对应 3 个字节。
+> 如何解决？？ 
+>
+> **需要要将str 转成 []rune 切片**
+
+1.传统方式的解决办法：
+
+```go
+var str string = "hello,world!北京"
+	str2 := []rune(str) //就是把str转成[]rune
+	for i := 0; i < len(str2); i++ {
+		fmt.Printf("%c \n", str2[i])
+	}
+
+	//h
+	//e
+	//l
+	//l
+	//o
+	//,
+	//w
+	//o
+	//r
+	//l
+	//d
+	//!
+	//北
+	//京
+```
+
+2.对应 for-range 遍历方式而言，是按照字符方式遍历。因此如果有字符串有中文，也是可以的
+
+```go
+str = "abc-ok上海"
+	for index, val := range str {
+		fmt.Printf("index=%d , val=%c \n", index, val)
+	}
+
+	//index=0 , val=a
+	//index=1 , val=b
+	//index=2 , val=c
+	//index=3 , val=-
+	//index=4 , val=o
+	//index=5 , val=k
+	//index=6 , val=上
+	//index=9 , val=海
+```
+
